@@ -1,0 +1,935 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SparkShire: Lanternlight</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a twilight village. Lantern lights on top, a cream sign for the number, cream sticker cards, evergreen hills below. Palette from the SparkShire blueprint. */
+:root{
+  --evergreen:#355C4A; --ever-d:#2a4a3b; --cream:#F5F1E8; --cream-d:#E6DFCC;
+  --twilight:#4C5D87; --night:#2c3556; --gold:#C9A45C; --gold-l:#E8D29B; --rose:#D28AA8; --char:#303030; --soft:#5d5a66;
+  --leafc:#5f9a6e; --face:#3b2f36; --blush:rgba(210,138,168,.7);
+  --f-display:'Fredoka','Trebuchet MS',system-ui,sans-serif;
+  --f-body:'Nunito','Segoe UI',system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{font-family:var(--f-body);color:var(--char);font-size:17px;line-height:1.4;background:var(--night);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:4px solid var(--gold-l);outline-offset:3px}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.screen{min-height:100%;display:flex;flex-direction:column}
+.screen[hidden]{display:none}
+
+/* sky, hills, stars, fireflies */
+.sky{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(180deg,#2c3556 0%,#4C5D87 38%,#8c78a6 68%,#D28AA8 100%)}
+.stars{position:absolute;inset:0 0 40% 0;animation:twinkle 6s ease-in-out infinite;
+  background-image:radial-gradient(1.6px 1.6px at 8% 12%,#fff 90%,transparent),radial-gradient(1.6px 1.6px at 22% 30%,#fff 90%,transparent),radial-gradient(2.2px 2.2px at 37% 8%,#fff 90%,transparent),radial-gradient(1.6px 1.6px at 51% 24%,#fff 90%,transparent),radial-gradient(2.2px 2.2px at 66% 14%,#E8D29B 90%,transparent),radial-gradient(1.6px 1.6px at 79% 33%,#fff 90%,transparent),radial-gradient(1.6px 1.6px at 91% 10%,#fff 90%,transparent),radial-gradient(1.6px 1.6px at 14% 44%,#E8D29B 90%,transparent),radial-gradient(1.6px 1.6px at 58% 46%,#fff 90%,transparent),radial-gradient(1.6px 1.6px at 86% 52%,#fff 90%,transparent)}
+.paper{position:absolute;inset:0;opacity:.16;mix-blend-mode:soft-light;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:34%}
+.ff{position:absolute;width:5px;height:5px;border-radius:50%;background:#f6e2a6;box-shadow:0 0 8px 3px rgba(246,226,166,.7);animation:ff 9s ease-in-out infinite alternate}
+
+/* lantern string */
+.lights{height:46px;flex:none;background-image:radial-gradient(circle at 14px 27px,#f8e2a0 0 4px,rgba(248,226,160,.45) 5px,transparent 12px),linear-gradient(#d8cfb8,#d8cfb8);background-size:48px 46px,100% 2px;background-position:0 0,0 21px;background-repeat:repeat-x,no-repeat}
+
+/* home */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-top:12px}
+.mark{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,6.5vw,46px);line-height:1;letter-spacing:.5px;color:var(--cream);text-shadow:0 2px 14px rgba(20,24,50,.5)}
+.mark span{display:block;color:var(--gold-l);font-size:.46em;line-height:1.05;letter-spacing:2px;text-transform:uppercase;margin-top:5px}
+.icon-btn{min-width:56px;height:56px;padding:0 16px;border-radius:18px;background:var(--cream);border:2px solid var(--gold);box-shadow:0 4px 0 rgba(20,24,50,.35);font-weight:800;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.icon-btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(20,24,50,.35)}
+.lead{margin:10px 0 0;font-size:18px;color:rgba(245,241,232,.9);max-width:46ch}
+.homewrap{width:100%;max-width:1100px;margin-inline:auto}
+.players{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:18px;padding-top:22px;padding-bottom:18px;width:100%;max-width:1100px;margin-inline:auto}
+.card-p,.player,.panel{background:var(--cream);border:3px solid var(--gold);border-radius:26px;box-shadow:0 6px 0 rgba(20,24,50,.35),0 16px 26px rgba(20,24,50,.28)}
+.player{padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.player-empty{justify-content:center;align-items:flex-start;min-height:230px;border-style:dashed;background:rgba(245,241,232,.96)}.player-empty p{margin:0;color:var(--soft);font-weight:700}.empty-cat{font-size:42px;line-height:1}.player h2{margin:0;font-family:var(--f-display);font-weight:600;font-size:30px;line-height:1.1;overflow-wrap:anywhere;color:var(--evergreen)}
+.buddy-mark{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;margin-right:6px;border-radius:12px;background:var(--cream-d);font-size:21px;vertical-align:middle}
+.wallet{font-weight:900;color:var(--evergreen);background:#e4eadb;border-radius:14px;padding:8px 12px;display:inline-flex;align-items:center;gap:6px}
+.shop-items{display:grid;grid-template-columns:1fr;gap:10px;width:100%}
+.shop-item{display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border:2px solid #cdbf98;border-radius:16px;background:#fff;width:100%}
+.shop-item .cosmetic{font-size:30px;min-width:42px;text-align:center}
+.shop-item .item-info{flex:1;min-width:0}
+.shop-item .item-info b{display:block;color:var(--evergreen)}
+.shop-item .item-info small{display:block;color:var(--soft);font-weight:700}
+.shop-item .item-action{font-weight:900;color:var(--evergreen);white-space:nowrap}
+.shop-item[disabled]{opacity:.55;cursor:default}
+.shop-note{margin:0;color:var(--soft);font-size:14px;font-weight:700}
+.player .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--cream-d);border-radius:999px;padding:4px 12px;font-weight:800;font-size:15px}
+.edit{font-weight:800;font-size:15px;padding:10px 14px;border-radius:14px;background:var(--cream-d);min-height:44px}
+.go{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.play-btn{min-height:84px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 6px 0 rgba(20,24,50,.35)}
+.play-btn b{font-family:var(--f-display);font-weight:600;font-size:26px;line-height:1.1}
+.play-btn small{font-weight:800;font-size:14px;opacity:.95}
+.play-btn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(20,24,50,.35)}
+.play-btn.calm{background:var(--evergreen);color:var(--cream)}
+.play-btn.timed{background:var(--gold);color:var(--char)}
+.join{max-width:1100px;width:100%;margin:0 auto 18px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.join h2{margin:0;font-family:var(--f-display);font-weight:600;font-size:26px;color:var(--evergreen)}
+.join p{margin:0;color:var(--soft);font-weight:700;font-size:15px}
+.joinrow{display:flex;gap:10px;flex-wrap:wrap}
+.joinrow input{flex:1 1 220px;min-width:0}
+.msg{min-height:1.4em;font-weight:800;font-size:15px;color:#9a3d2e}
+.msg.ok{color:var(--evergreen)}
+.foot{padding-bottom:12px;color:rgba(245,241,232,.85);font-weight:700;font-size:15px;max-width:60ch}
+.acewrap{margin:12px auto 8px;display:flex;justify-content:center;align-items:center;gap:12px;padding:12px 16px 18px;max-width:1100px}
+.ace{width:112px;height:112px;flex:none;border-radius:50%;filter:drop-shadow(0 5px 8px rgba(20,24,50,.35))}
+.ace svg{width:100%;height:100%;display:block}
+.acesay{background:var(--cream);border-radius:16px;padding:10px 14px;font-weight:800;font-size:16px;margin:0;border:2px solid var(--gold);max-width:240px;box-shadow:0 4px 0 rgba(20,24,50,.25)}
+
+/* settings */
+.panel{padding:20px;width:100%;max-width:640px;margin:16px auto 28px;display:flex;flex-direction:column;gap:22px}
+.panel h2{margin:0;font-family:var(--f-display);font-weight:600;font-size:30px;color:var(--evergreen)}
+.field-l{display:flex;flex-direction:column;gap:8px}
+.field-l>label,.field-l>.lab{font-weight:800;font-size:16px}
+.field-l .hint{font-weight:700;font-size:14px;color:var(--soft);margin:0}
+input[type=text]{font:inherit;font-weight:800;font-size:20px;padding:12px 14px;border-radius:14px;border:3px solid #cdbf98;background:#fff;color:var(--char);width:100%}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{min-width:64px;min-height:56px;padding:0 18px;border-radius:16px;background:var(--cream-d);font-weight:800;font-size:20px;border:3px solid transparent}
+.seg button[aria-pressed=true]{background:var(--evergreen);color:var(--cream);border-color:var(--ever-d)}
+.seg.ops button{font-size:30px;min-width:68px;font-family:var(--f-display)}
+.seg.wide button{font-size:18px}
+.btn{min-height:60px;padding:0 24px;border-radius:18px;background:var(--evergreen);color:var(--cream);font-family:var(--f-display);font-weight:600;font-size:23px;box-shadow:0 5px 0 var(--ever-d)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ever-d)}
+.btn.alt{background:var(--cream-d);color:var(--char);box-shadow:0 5px 0 #c9bf9f}
+.btn.sm{min-height:48px;font-size:18px;padding:0 16px;border-radius:14px}
+.btns{display:flex;flex-wrap:wrap;gap:12px}
+.danger{font-weight:800;font-size:15px;color:#9a3d2e;text-decoration:underline;padding:8px 0;align-self:flex-start;min-height:44px}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.th{position:relative;width:76px;height:76px}
+.th img{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block;background:var(--cream-d)}
+.th button{position:absolute;top:-8px;right:-8px;width:34px;height:34px;border-radius:50%;background:var(--char);color:#fff;font-weight:800;font-size:18px;line-height:1}
+
+/* play */
+.play{height:100%}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:4px}
+.pill{background:var(--cream);border:2px solid var(--gold);border-radius:18px;padding:4px 16px;min-width:96px;text-align:center;box-shadow:0 4px 0 rgba(20,24,50,.35)}
+.pill small{display:block;font-weight:800;font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--soft)}
+.pill b{font-family:var(--f-display);font-weight:600;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums}
+.pause{width:58px;height:58px;border-radius:18px;background:var(--cream);border:2px solid var(--gold);box-shadow:0 4px 0 rgba(20,24,50,.35);font-size:22px;font-weight:800;letter-spacing:2px}
+.barwrap{padding-top:10px}
+.bar{height:12px;border-radius:99px;background:rgba(245,241,232,.3);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--gold-l);border-radius:99px}
+.signwrap{display:flex;justify-content:center;padding-top:22px}
+.sign{position:relative;background:var(--cream);border:4px solid var(--gold);border-radius:26px;box-shadow:0 6px 0 rgba(20,24,50,.35),0 0 28px rgba(248,226,160,.35);padding:6px 38px 10px;text-align:center;min-width:min(78%,300px)}
+.sign::before,.sign::after{content:"";position:absolute;top:-20px;width:3px;height:18px;background:#d8cfb8}
+.sign::before{left:28px}.sign::after{right:28px}
+.sign .find{display:block;font-weight:800;font-size:16px;letter-spacing:3px;text-transform:uppercase;color:var(--soft)}
+.sign #target{display:block;font-family:var(--f-display);font-weight:700;font-size:clamp(54px,15vw,92px);line-height:1;color:var(--evergreen);font-variant-numeric:tabular-nums}
+.round-buddy{display:flex;align-items:center;justify-content:center;gap:9px;color:var(--cream);font-weight:800;padding-top:6px;min-height:42px}.mini-ace{font-size:25px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}.round-points{background:rgba(245,241,232,.95);color:var(--evergreen);border:1px solid var(--gold);border-radius:999px;padding:4px 10px;white-space:nowrap;font-size:14px}#field{flex:1;display:grid;grid-template-columns:repeat(var(--cols,2),minmax(0,1fr));gap:14px;align-content:center;align-items:center;width:100%;max-width:780px;margin:0 auto;padding-top:20px;padding-bottom:max(24px,env(safe-area-inset-bottom,0px))}
+.answer-card{background:var(--cream);border:3px solid var(--gold);border-radius:26px;box-shadow:0 6px 0 rgba(20,24,50,.38),0 14px 20px rgba(20,24,50,.25);padding:12px 6px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:clamp(120px,24vh,210px);animation:rise .38s ease-out both;transition:transform .15s,background .2s,opacity .2s}
+.answer-card .emo{width:clamp(56px,16vw,96px);height:clamp(56px,16vw,96px);display:block;margin:2px auto;animation:bob 3.2s ease-in-out infinite}
+.answer-card img.pic{object-fit:cover;border-radius:20px}
+.answer-card .expr{font-family:var(--f-display);font-weight:600;font-size:clamp(21px,5.8vw,40px);line-height:1.1;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--char)}
+.answer-card:active{transform:translateY(4px)}
+.answer-card.good{background:#e1ecd9;border-color:var(--evergreen);box-shadow:0 6px 0 var(--evergreen),0 0 0 5px rgba(232,210,155,.9);transform:scale(1.06)}
+.answer-card.nope{background:#d7d4dc;opacity:.6;animation:shake .35s}
+.answer-card.hint{box-shadow:0 6px 0 rgba(20,24,50,.38),0 0 0 6px var(--gold-l),0 0 24px 6px rgba(248,226,160,.7)}
+.calm .answer-card .emo{animation-duration:5.5s}
+.calm .answer-card.nope{animation:none}
+.overlay{position:fixed;inset:0;background:rgba(28,34,66,.62);display:flex;padding:20px;z-index:20;overflow:auto}
+.overlay[hidden]{display:none}
+.overlay .panel{margin:auto;align-items:center;text-align:center;max-width:520px}
+.big{font-family:var(--f-display);font-weight:700;font-size:clamp(72px,22vw,130px);line-height:1;color:var(--twilight)}
+.stat{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;font-weight:800;color:var(--soft)}
+.stat b{display:block;font-family:var(--f-display);font-size:30px;color:var(--char)}
+.newbest{background:var(--gold-l);border-radius:999px;padding:6px 18px;font-weight:800}
+.vs{font-family:var(--f-display);font-weight:600;font-size:24px;color:var(--evergreen)}
+.share{width:100%;display:flex;flex-direction:column;gap:10px;border-top:2px dashed #cdbf98;padding-top:16px}
+.share h3{margin:0;font-family:var(--f-display);font-weight:600;font-size:22px;color:var(--evergreen)}
+.share input{font-size:14px;padding:10px 12px}
+.share .btns{justify-content:center}
+.pick{display:flex;flex-direction:column;gap:10px;width:100%}
+.pickimg{max-width:100%;max-height:52vh;border-radius:18px;border:3px solid var(--gold)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes twinkle{0%,100%{opacity:.95}50%{opacity:.55}}
+@keyframes ff{0%{transform:translate(0,0);opacity:.2}50%{opacity:1}100%{transform:translate(28px,-34px);opacity:.3}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* v3: compact empty slots, real Ace everywhere, quiz cards */
+.player-empty{min-height:0;flex-direction:row;align-items:center;gap:14px;padding:12px 18px;border-radius:22px}.player-empty p{display:none}.player-empty h2{font-size:22px;flex:1}.player-empty .btn{flex:none}.empty-cat{width:46px;height:46px;flex:none}.empty-cat svg,.buddy-mark svg,.mini-ace svg{width:100%;height:100%;display:block}.buddy-mark{padding:2px}
+.mini-ace{width:46px;height:46px;flex:none}.round-buddy{text-align:left}
+.sign.q #target{font-size:clamp(20px,5.6vw,28px);line-height:1.2;font-weight:600;padding:2px 0 4px}.sign.q{min-width:min(92%,420px);padding:8px 22px 12px}
+.answer-card.qcard{min-height:0;padding:16px 14px}.answer-card .qtext{font-family:var(--f-body);font-weight:800;font-size:clamp(18px,4.8vw,22px);line-height:1.25;color:var(--char);text-align:center}
+
+/* v4: juice + visible outfits */
+.ace svg,.mini-ace svg,.shop-ace svg,.buddy-mark svg{overflow:visible}
+.ace{width:140px;height:140px;animation:aceIdle 3.4s ease-in-out infinite}.ace:active{animation:hop .4s}
+.mini-ace{width:62px;height:62px}.mini-ace.hop{animation:hop .55s}.mini-ace.wob{animation:wob .4s}
+.shop-ace{position:sticky;top:-6px;z-index:3;width:100%;height:122px;padding:4px 0;margin:0;background:var(--cream);border-bottom:2px solid var(--cream-d)}.shop-ace svg{height:100%;width:auto;margin:0 auto;display:block}.shop-ace.hop{animation:hop .5s}
+@keyframes aceIdle{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
+@keyframes hop{0%{transform:translateY(0)}35%{transform:translateY(-22px) scale(1.12)}70%{transform:translateY(0) scale(.96)}100%{transform:translateY(0)}}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+.spk{position:fixed;width:11px;height:11px;border-radius:50%;pointer-events:none;z-index:60;box-shadow:0 0 8px 2px rgba(248,226,160,.8);animation:spk .8s ease-out forwards}
+@keyframes spk{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.play-btn:active{transform:translateY(4px) scale(.98)}
+@media (prefers-reduced-motion:reduce){.spk{display:none}.ace,.mini-ace.hop,.mini-ace.wob,.shop-ace.hop{animation:none}}
+
+.go .play-btn.words{grid-column:1/-1;background:var(--twilight);color:var(--cream);border-color:#3b4670}
+.go .play-btn.words small{color:rgba(245,241,232,.9)}
+.speakbtn{position:absolute;right:8px;top:6px;width:44px;height:44px;border-radius:50%;background:var(--gold-l);border:2px solid var(--gold);font-size:22px;line-height:1;box-shadow:0 3px 0 rgba(20,24,50,.3)}.speakbtn:active{transform:translateY(2px)}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="lantern" viewBox="0 0 100 100">
+      <path d="M38 20 Q50 8 62 20" fill="none" stroke="#355C4A" stroke-width="5" stroke-linecap="round"/>
+      <path d="M36 25 L64 25 L70 72 Q50 86 30 72Z" fill="#C9A45C" stroke="#8c6c35" stroke-width="3"/>
+      <rect x="38" y="32" width="24" height="34" rx="8" fill="#F8E2A0"/><path d="M50 37 Q40 50 50 61 Q60 50 50 37Z" fill="#fff6d8"/>
+      <path d="M31 32H69 M30 69H70" stroke="#355C4A" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="star" viewBox="0 0 100 100">
+      <path d="M50 8 L61 36 L91 38 L68 57 L75 87 L50 71 L25 87 L32 57 L9 38 L39 36Z" fill="#C9A45C" stroke="#8c6c35" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M50 22L55 40L73 42L59 53L63 70L50 61L37 70L41 53L27 42L45 40Z" fill="#F5F1E8" opacity=".65"/>
+    </symbol>
+    <symbol id="mushroom" viewBox="0 0 100 100">
+      <path d="M36 50 Q50 42 64 50 L70 82 Q50 94 30 82Z" fill="#F5F1E8" stroke="#355C4A" stroke-width="3"/>
+      <path d="M12 50 Q15 21 40 17 Q68 10 84 34 Q90 43 88 52Z" fill="#D28AA8" stroke="#355C4A" stroke-width="3"/>
+      <circle cx="34" cy="35" r="5" fill="#F5F1E8"/><circle cx="61" cy="27" r="4" fill="#F5F1E8"/><circle cx="70" cy="43" r="5" fill="#F5F1E8"/>
+    </symbol>
+    <symbol id="pine" viewBox="0 0 100 100">
+      <path d="M50 8 L20 43 H34 L14 65 H38 L28 81 H72 L62 65 H86 L66 43 H80Z" fill="#355C4A" stroke="#244132" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="44" y="79" width="12" height="13" rx="2" fill="#8c6c35"/><circle cx="50" cy="43" r="4" fill="#C9A45C"/>
+    </symbol>
+    <symbol id="book" viewBox="0 0 100 100">
+      <path d="M12 24 Q32 16 50 29 Q68 16 88 24 V78 Q68 70 50 83 Q32 70 12 78Z" fill="#F5F1E8" stroke="#355C4A" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M50 29V82 M22 36 Q34 32 42 39 M22 48 Q34 44 42 51 M58 39 Q70 32 80 36 M58 51 Q70 44 80 48" fill="none" stroke="#C9A45C" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="moon" viewBox="0 0 100 100">
+      <path d="M68 14 Q42 27 47 51 Q51 75 78 78 Q60 95 38 82 Q11 66 22 39 Q36 10 68 14Z" fill="#C9A45C" stroke="#8c6c35" stroke-width="3"/>
+      <circle cx="72" cy="30" r="4" fill="#4C5D87"/><circle cx="81" cy="48" r="3" fill="#4C5D87"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="sky" aria-hidden="true">
+  <div class="stars"></div>
+  <svg class="hills" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice">
+    <path d="M0 118 Q80 66 170 108 T400 88 V200 H0Z" fill="#3e6755"/>
+    <g fill="#2a4a3b"><path d="M34 74 46 104H22Z M34 88 50 114H18Z"/><path d="M62 82 72 106H52Z M62 94 76 116H48Z"/><path d="M352 70 364 100H340Z M352 84 368 112H336Z"/></g>
+    <path d="M0 150 Q100 108 200 140 T400 128 V200 H0Z" fill="#355C4A"/>
+    <g><path d="M296 118 L312 104 L328 118Z" fill="#2a4a3b"/><rect x="298" y="118" width="28" height="16" fill="#2a4a3b"/><rect x="305" y="122" width="7" height="7" fill="#f8e2a0"/><rect x="316" y="122" width="5" height="12" fill="#1f3a2e"/></g>
+  </svg>
+  <i class="ff" style="left:12%;top:58%;animation-delay:0s"></i><i class="ff" style="left:30%;top:68%;animation-delay:-3s"></i><i class="ff" style="left:48%;top:62%;animation-delay:-6s"></i><i class="ff" style="left:66%;top:70%;animation-delay:-2s"></i><i class="ff" style="left:82%;top:60%;animation-delay:-5s"></i><i class="ff" style="left:90%;top:74%;animation-delay:-8s"></i>
+  <div class="paper"></div>
+</div>
+
+<div id="app">
+  <!-- HOME -->
+  <section id="home" class="screen">
+    <div class="lights"></div>
+    <div class="gut homewrap">
+      <div class="top">
+        <div class="mark">SparkShire<span>Lanternlight</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><button class="icon-btn" id="readBtn" type="button">Read aloud: off</button><button class="icon-btn" id="soundBtn" aria-pressed="true">Sound on</button></div>
+      </div>
+      <p class="lead">Find the card that matches the number. Pick who is playing below, then choose Calm (no clock) or Timed.</p>
+    <div class="acewrap gut homewrap">
+      <button class="ace" id="ace" aria-label="Ace the cat. Tap to say hi">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M75 75 Q100 83 94 54 Q91 43 84 47" fill="none" stroke="#17151d" stroke-width="9" stroke-linecap="round"/>
+          <path d="M24 67 Q13 62 17 52 L10 47 L20 42 Q24 34 20 20 Q37 20 42 33 Q48 29 52 31 Q58 29 62 33 Q70 18 83 20 Q78 38 84 45 L91 50 L83 56 Q88 67 77 74 L80 82 L70 80 L72 91 L61 86 L50 93 L41 86 L30 92 L31 81 L22 84 L26 74Z" fill="#17151d" stroke="#0f1018" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M29 37 Q22 25 26 18 Q37 23 42 35 M64 34 Q73 22 79 19 Q81 31 76 40" fill="#25232d"/>
+          <path d="M33 45 Q41 39 46 47 Q41 54 34 51Z M57 47 Q64 39 71 45 L69 51 Q62 54 57 47Z" fill="#8bdc97"/>
+          <ellipse cx="40" cy="47" rx="2" ry="4" fill="#101018"/><ellipse cx="64" cy="47" rx="2" ry="4" fill="#101018"/>
+          <path d="M47 58 L53 58 L50 62Z" fill="#D28AA8"/><path d="M50 62 Q45 68 41 63 M50 62 Q55 68 59 63" fill="none" stroke="#d6cedd" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M34 61 L18 58 M34 65 L18 67 M66 61 L82 58 M66 65 L82 67" stroke="#d6cedd" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>
+          <path d="M29 73 Q22 81 31 86 M70 73 Q78 81 69 87" fill="none" stroke="#34303c" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div><strong style="display:block;color:var(--cream);font-family:var(--f-display);font-size:22px">Meet Ace</strong><span style="display:block;color:rgba(245,241,232,.9);max-width:27ch">Your forest buddy. Every right answer earns a Spark Point (✦). Spend them to dress Ace up.</span></div>
+      <span class="acesay" id="aceSay" hidden>mrrp!</span>
+
+    </div>
+      <p class="lead" id="nojs" style="font-weight:800;color:#f6d6a8">To play, save this file and open it in Chrome or Firefox.</p>
+    </div>
+    <div class="players gut" id="players"></div>
+    <div class="gut" style="width:100%"><div class="join panel" id="joinPanel">
+      <h2>Challenge a friend</h2>
+      <p>Play a Timed round, then send your challenge code. Your friend plays the same problems and you compare scores.</p>
+      <div class="joinrow"><input type="text" id="codeIn" placeholder="Paste a challenge code" autocomplete="off" aria-label="Challenge code"><button class="btn sm" id="codeGo" type="button">Play it</button></div>
+      <p class="msg" id="codeMsg" role="status"></p>
+    </div></div>
+    <p class="foot gut homewrap">Calm has no clock and no pressure. After two wrong tries it lights up the answer, and Ace sometimes stops to ask a word or real-life question. Ace's Quiz is all questions, no math. Timed is one round against the clock. Scores stay on this device.</p>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settings" class="screen" hidden>
+    <div class="lights"></div>
+    <div class="gut" style="width:100%">
+      <div class="panel" id="setPanel">
+        <h2>Set up a player</h2><p style="margin:0;color:var(--soft);font-weight:700">Tap the name field to give this profile a real name. Each player keeps their own points and buddy look on this device.</p>
+        <div class="field-l"><label for="nameInput">Name</label><input type="text" id="nameInput" maxlength="14" autocomplete="off"></div>
+        <div class="field-l"><span class="lab" id="opsLab">Kinds of problems</span><div class="seg ops" id="opsSeg" role="group" aria-labelledby="opsLab"></div><p class="hint">Pick one or more.</p></div>
+        <div class="field-l"><span class="lab" id="lvlLab">Difficulty</span><div class="seg wide" id="lvlSeg" role="group" aria-labelledby="lvlLab"></div><p class="hint" id="lvlHint"></p></div>
+        <div class="field-l"><span class="lab" id="cntLab">Answers per round</span><div class="seg" id="cntSeg" role="group" aria-labelledby="cntLab"></div></div>
+        <div class="field-l"><span class="lab" id="lookLab">Card pictures</span><div class="seg wide" id="lookSeg" role="group" aria-labelledby="lookLab"></div>
+          <div id="photoBox" hidden>
+            <div class="thumbs" id="thumbs"></div>
+            <div class="btns"><button class="btn alt" id="addPhotos" type="button">Add photos</button><button class="danger" id="clearPhotos" type="button">Remove all</button></div>
+            <input type="file" id="photoInput" accept="image/*" multiple hidden>
+          </div>
+          <p class="hint" id="photoHint">Painted forest tokens on every card.</p><p class="hint" id="photoMsg" role="status"></p></div>
+        <div class="field-l"><span class="lab" id="timeLab">Timed round length (everyone)</span><div class="seg wide" id="timeSeg" role="group" aria-labelledby="timeLab"></div></div>
+        <button class="danger" id="resetBest">Reset this player's best scores</button>
+        <div class="btns"><button class="btn" id="doneBtn">Done</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" class="screen play" hidden>
+    <div class="lights"></div>
+    <div class="hud gut">
+      <button class="pause" id="pauseBtn" aria-label="Pause">II</button>
+      <div class="pill"><small id="scoreLab">Score</small><b id="score">0</b></div>
+      <div class="pill" id="timePill"><small>Time</small><b id="time">60</b></div>
+    </div>
+    <div class="barwrap gut" id="barWrap"><div class="bar"><i id="barFill"></i></div></div>
+    <div class="signwrap gut"><div class="sign" role="status" aria-live="polite"><span class="find">Find</span><span id="target">0</span></div></div><div class="round-buddy gut"><span class="mini-ace" aria-hidden="true"></span><span id="buddyLine">Ace says: find the matching number!</span><span class="round-points" id="roundPoints">✦ 0</span></div>
+    <div id="field" class="gut"></div>
+
+    <div class="overlay" id="pauseOv" hidden>
+      <div class="panel"><h2>Paused</h2><div class="btns" style="justify-content:center"><button class="btn" id="resumeBtn">Keep playing</button><button class="btn alt" id="quitBtn">Home</button></div></div>
+    </div>
+
+    <div class="overlay" id="resultOv" hidden>
+      <div class="panel">
+        <h2 id="resTitle">Time's up</h2>
+        <div class="big" id="resScore">0</div>
+        <div id="resNew" class="newbest" hidden>New best!</div>
+        <div class="vs" id="resVs" hidden></div>
+        <div class="stat"><div><b id="resBest">0</b>Best</div><div><b id="resAcc">0%</b>Accuracy</div></div>
+        <div class="share">
+          <h3>Challenge a friend</h3>
+          <input type="text" id="codeOut" readonly aria-label="Your challenge code">
+          <div class="btns"><button class="btn sm" id="copyBtn" type="button">Copy code</button><button class="btn sm alt" id="shareBtn" type="button" hidden>Share</button><button class="btn sm alt" id="picBtn" type="button">Make picture</button></div>
+          <p class="msg" id="shareMsg" role="status"></p>
+        </div>
+        <div class="btns" style="justify-content:center"><button class="btn" id="againBtn">Play again</button><button class="btn alt" id="homeBtn">Home</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- who's playing a challenge -->
+  <div class="overlay" id="pickOv" hidden>
+    <div class="panel">
+      <h2 id="pickTitle">Challenge</h2>
+      <p id="pickText" style="margin:0;font-weight:700"></p>
+      <div class="pick" id="pickBtns"></div>
+      <button class="btn alt" id="pickCancel" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <!-- buddy shop -->
+  <div class="overlay" id="shopOv" hidden>
+    <div class="panel">
+      <h2 id="shopTitle">Dress up Ace</h2><div class="shop-ace" id="shopAce" aria-hidden="true"></div>
+      <p style="margin:0;font-weight:700">Save your Spark Points and unlock little accessories for Ace. Everything here is earned in-game—no real-money purchases.</p>
+      <div class="wallet"><span>✦</span><span id="shopBalance">0</span><span>Spark Points</span></div>
+      <div class="shop-items" id="shopItems"></div>
+      <p class="shop-note" id="shopMsg" role="status">You keep what you unlock on this device.</p>
+      <div class="btns" style="justify-content:center"><button class="btn alt" id="shopClose" type="button">Back to game</button></div>
+    </div>
+  </div>
+
+  <!-- picture -->
+  <div class="overlay" id="picOv" hidden>
+    <div class="panel">
+      <h2>Your score picture</h2>
+      <img class="pickimg" id="picImg" alt="Score picture">
+      <p style="margin:0;font-weight:700;color:var(--soft)">Press and hold the picture to save or share it.</p>
+      <div class="btns" style="justify-content:center"><button class="btn sm" id="picShare" type="button" hidden>Share picture</button><button class="btn sm alt" id="picClose" type="button">Close</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var ACE_SVG=document.querySelector('#ace svg').outerHTML;document.querySelector('.mini-ace').innerHTML=ACE_SVG;
+
+  /* ---------- read aloud (browser voice, works offline) ---------- */
+  var READ=false;try{READ=localStorage.getItem('lanternlight.read')==='1'}catch(e){}
+  function say(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.rate=.88;u.pitch=1.05;speechSynthesis.speak(u)}catch(e){}}
+  function sayRound(){if(!G||!G.round)return;var r=G.round;if(r.quiz)say(r.quiz.q+' ... '+r.items.map(function(it){return it.text}).join(' ... or ... '));else say('Find '+G.target)}
+  function readLabel(){$('#readBtn').textContent='Read aloud: '+(READ?'on':'off')}
+  readLabel();
+  $('#readBtn').addEventListener('click',function(){READ=!READ;try{localStorage.setItem('lanternlight.read',READ?'1':'0')}catch(e){}readLabel();if(READ)say('Read aloud is on')});
+  $('.sign').insertAdjacentHTML('beforeend','<button id="speakBtn" class="speakbtn" type="button" aria-label="Read this out loud">🔊</button>');
+  $('#speakBtn').addEventListener('click',function(e){e.stopPropagation();sayRound()});
+  var LS='orchardpop.v1';
+  var TOKENS=['lantern','star','mushroom','pine','book','moon'];
+  var OPS={add:'+',sub:'−',mul:'×',div:'÷'};
+  var OPNAME={add:'Add',sub:'Subtract',mul:'Multiply',div:'Divide'};
+  var LVL={1:'Easy',2:'Growing',3:'Challenge'};
+  var COSMETICS=[
+    {id:'',name:'Plain Ace',icon:'🐾',cost:0,desc:'Take the outfit off.'},
+    {id:'leaf',name:'Fern Crown',icon:'🍃',cost:10,desc:'A little forest flair.'},
+    {id:'moon',name:'Moonlit Scarf',icon:'🌙',cost:20,desc:'For cozy twilight adventures.'},
+    {id:'star',name:'Golden Star',icon:'⭐',cost:30,desc:'A tiny badge of brilliance.'},
+    {id:'hat',name:'Wizard Hat',icon:'🪄',cost:50,desc:'Twilight blue with gold stars.'},
+    {id:'lantern',name:'Lantern Light',icon:'🏮',cost:80,desc:'Ace carries a glowing lantern.'},
+    {id:'cape',name:'Evening Rose Cape',icon:'🦸',cost:120,desc:'For a very brave cat.'}
+  ];
+  var GEAR={
+    leaf:{f:'<path d="M26 26 Q31 13 41 23 Q34 30 26 26Z" fill="#5f9a6e"/><path d="M40 23 Q50 9 61 23 Q50 30 40 23Z" fill="#4f8a60"/><path d="M60 23 Q69 13 76 26 Q68 30 60 23Z" fill="#5f9a6e"/><circle cx="50" cy="22" r="3.2" fill="#D28AA8"/>'},
+    moon:{f:'<path d="M26 73 Q50 87 74 73 L77 82 Q50 96 23 82Z" fill="#4C5D87"/><path d="M58 86 L66 99 L57 96Z" fill="#4C5D87"/><path d="M47 83a5 5 0 1 0 5 6a4 4 0 1 1-5-6Z" fill="#E8D29B"/>'},
+    star:{f:'<g transform="translate(50 37) scale(.6) translate(-50 -39)"><path d="M50 28 L53.4 35.6 L61.5 36.4 L55.4 41.8 L57.2 49.8 L50 45.6 L42.8 49.8 L44.6 41.8 L38.5 36.4 L46.6 35.6Z" fill="#E8D29B" stroke="#C9A45C" stroke-width="1.5"/></g>'},
+    hat:{f:'<path d="M31 31 L55 1 L74 31Z" fill="#4C5D87"/><ellipse cx="52" cy="31" rx="27" ry="5.5" fill="#3b4670"/><circle cx="52" cy="17" r="2.2" fill="#E8D29B"/><circle cx="60" cy="25" r="1.6" fill="#E8D29B"/><circle cx="46" cy="25" r="1.4" fill="#E8D29B"/>'},
+    lantern:{f:'<circle cx="11" cy="76" r="17" fill="#f8e2a0" opacity=".28"/><path d="M5 68 Q11 58 17 68" fill="none" stroke="#C9A45C" stroke-width="2"/><rect x="4" y="68" width="14" height="17" rx="4" fill="#f8e2a0" stroke="#C9A45C" stroke-width="2.2"/><rect x="8" y="73" width="6" height="8" rx="2" fill="#fff6cf"/>'},
+    cape:{b:'<path d="M25 64 Q50 102 75 64 L90 99 Q50 110 10 99Z" fill="#D28AA8"/>',f:'<circle cx="50" cy="76" r="3.4" fill="#E8D29B" stroke="#C9A45C"/>'}
+  };
+  function aceSvg(id){var g=GEAR[id];if(!g)return ACE_SVG;var o=ACE_SVG;if(g.b)o=o.replace(/(<svg[^>]*>)/,'$1'+g.b);if(g.f)o=o.replace('</svg>',g.f+'</svg>');return o}
+  function hop(el){if(!el)return;el.classList.remove('hop','wob');void el.offsetWidth;el.classList.add('hop')}
+  function burst(el,n){if(!el)return;var r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,c=['#E8D29B','#D28AA8','#8bdc97','#9fb4ff'];for(var i=0;i<(n||12);i++){var e=document.createElement('i'),an=Math.random()*6.283,d=45+Math.random()*80;e.className='spk';e.style.cssText='left:'+cx+'px;top:'+cy+'px;background:'+c[i%4]+';--dx:'+Math.cos(an)*d+'px;--dy:'+Math.sin(an)*d+'px';document.body.appendChild(e);(function(x){setTimeout(function(){x.remove()},850)})(e)}}
+  var CHEERS=['Purr-fect!','You got it!','Nice one!','Whisker-tastic!','Brilliant!','Yes! Keep going!'];
+  var LVLHINT={
+    1:'Add to 10, subtract within 10, times tables up to 5, simple division.',
+    2:'Add numbers up to 20, subtract within 30, times tables up to 10, division to 10.',
+    3:'Bigger numbers: add to 120, subtract within 100, times tables up to 12 and beyond, division to 12.'
+  };
+
+  function defaults(){return{
+    players:[
+      {id:'p1',name:'Your name',ops:['add'],level:1,count:3},
+      {id:'p2',name:'Add a player',ops:['add','sub','mul'],level:2,count:4},
+      {id:'p3',name:'Add a player',ops:['mul','div'],level:3,count:6}
+    ],
+    best:{p1:{timed:0,calm:0},p2:{timed:0,calm:0},p3:{timed:0,calm:0}},
+    sound:true,timeLen:60
+  }}
+  var store=load();
+  function load(){
+    var d=defaults();
+    try{
+      var raw=localStorage.getItem(LS);
+      if(raw){
+        var o=JSON.parse(raw);
+        if(o&&Array.isArray(o.players)&&o.players.length===3) d.players=o.players;
+        d.players.forEach(function(p){if(typeof p.points!=='number'||p.points<0)p.points=0;if(!Array.isArray(p.ownedCosmetics))p.ownedCosmetics=[];if(typeof p.equippedCosmetic!=='string')p.equippedCosmetic='';});
+        if(o&&o.best) d.best=o.best;
+        if(o&&typeof o.sound==='boolean') d.sound=o.sound;
+        if(o&&[30,60,90].indexOf(o.timeLen)>-1) d.timeLen=o.timeLen;
+      }
+    }catch(e){}
+    d.players.forEach(function(p,i){if(typeof p.points!=='number'||p.points<0)p.points=0;if(!Array.isArray(p.ownedCosmetics))p.ownedCosmetics=[];if(typeof p.equippedCosmetic!=='string')p.equippedCosmetic='';if(p.name==='Player 1')p.name='Your name';if(p.name==='Player 2'||p.name==='Player 3')p.name='Add a player';});
+    return d;
+  }
+  function save(){try{localStorage.setItem(LS,JSON.stringify(store))}catch(e){}}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function bestOf(id,mode){var b=store.best[id]||{};return b[mode]||0}
+
+  /* ---------- own photos (stored on this device only) ---------- */
+  var PH='orchardpop.photos.v1',photos=loadPhotos();
+  function loadPhotos(){try{var o=JSON.parse(localStorage.getItem(PH));if(o&&typeof o==='object') return o}catch(e){}return{}}
+  function savePhotos(){try{localStorage.setItem(PH,JSON.stringify(photos));return true}catch(e){return false}}
+  function picsOf(id){return photos[id]||[]}
+  function shrink(file){
+    return new Promise(function(res){
+      var url=URL.createObjectURL(file),im=new Image();
+      im.onload=function(){
+        var s=Math.min(im.width,im.height),c=document.createElement('canvas');
+        c.width=c.height=256;
+        c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);
+        URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',.82));
+      };
+      im.onerror=function(){URL.revokeObjectURL(url);res(null)};
+      im.src=url;
+    });
+  }
+
+  /* ---------- sound ---------- */
+  var actx=null;
+  function ensureAudio(){
+    if(!store.sound) return null;
+    try{
+      if(!actx){var AC=window.AudioContext||window.webkitAudioContext;if(AC) actx=new AC()}
+      if(actx&&actx.state==='suspended') actx.resume();
+    }catch(e){actx=null}
+    return actx;
+  }
+  function tone(f,t0,dur,type,vol){
+    var c=ensureAudio();if(!c) return;
+    var o=c.createOscillator(),g=c.createGain(),t=c.currentTime+t0;
+    o.type=type||'sine';o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol||0.12,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+dur+0.05);
+  }
+  function sGood(){tone(659,0,.14);tone(880,.1,.2)}
+  function sBad(){tone(240,0,.18,'triangle',.07)}
+  function sEnd(){tone(523,0,.18);tone(659,.16,.18);tone(784,.32,.3)}
+
+  /* ---------- seeded random so a challenge repeats exactly ---------- */
+  function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  var R=Math.random;
+  function ri(a,b){return a+Math.floor(R()*(b-a+1))}
+  function pick(a){return a[Math.floor(R()*a.length)]}
+  function shuffle(a,r){r=r||R;a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+
+  /* ---------- problem generator ---------- */
+  function gen(op,lvl){
+    var a,b,r,c;
+    if(op==='add'){
+      c={1:[1,5],2:[5,20],3:[10,60]}[lvl];a=ri(c[0],c[1]);b=ri(c[0],c[1]);
+      return{text:a+' + '+b,value:a+b,op:op};
+    }
+    if(op==='sub'){
+      c={1:[2,10,1],2:[10,30,1],3:[30,100,10]}[lvl];a=ri(c[0],c[1]);b=ri(c[2],Math.max(c[2],a-1));
+      return{text:a+' − '+b,value:a-b,op:op};
+    }
+    if(op==='mul'){
+      c={1:[2,5,2,5],2:[2,10,2,10],3:[3,12,3,15]}[lvl];a=ri(c[0],c[1]);b=ri(c[2],c[3]);
+      return{text:a+' × '+b,value:a*b,op:op};
+    }
+    var m={1:5,2:10,3:12}[lvl];r=ri(2,m);b=ri(2,m);
+    return{text:(r*b)+' ÷ '+b,value:r,op:'div'};
+  }
+  function buildRound(p,lastTarget){
+    var ops=p.ops.length?p.ops:['add'];
+    var correct,i;
+    for(i=0;i<25;i++){correct=gen(pick(ops),p.level);if(correct.value!==lastTarget&&correct.value>0) break}
+    var items=[correct],vals={},texts={};
+    vals[correct.value]=1;texts[correct.text]=1;
+    var want=p.count,att=0;
+    while(items.length<want&&att<300){
+      att++;
+      var cand=gen(pick(ops),p.level);
+      if(vals[cand.value]||texts[cand.text]||cand.value<1) continue;
+      if(att<150&&Math.abs(cand.value-correct.value)>Math.max(3,Math.round(correct.value*.35))) continue;
+      vals[cand.value]=1;texts[cand.text]=1;items.push(cand);
+    }
+    correct.correct=true;
+    var syms=shuffle(TOKENS);
+    items=shuffle(items);
+    var pics=p.look==='photos'?shuffle(picsOf(p.id),Math.random):[];
+    items.forEach(function(it,k){it.sym=syms[k];if(pics[k]) it.img=pics[k]});
+    return{target:correct.value,items:items};
+  }
+
+  /* ---------- challenge codes ---------- */
+  function enc(o){
+    var j=JSON.stringify(o);
+    return 'OP1-'+btoa(unescape(encodeURIComponent(j))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function dec(s){
+    var m=String(s||'').match(/OP1-([A-Za-z0-9_-]+)/);
+    if(!m) return null;
+    try{
+      var b=m[1].replace(/-/g,'+').replace(/_/g,'/');
+      while(b.length%4) b+='=';
+      var o=JSON.parse(decodeURIComponent(escape(atob(b))));
+      if(!o||o.v!==1) return null;
+      if(!Number.isInteger(o.s)||o.s<1||o.s>2147483647) return null;
+      if(!Array.isArray(o.o)||!o.o.length||o.o.length>4||o.o.some(function(x){return !OPS[x]})) return null;
+      if([1,2,3].indexOf(o.l)<0||[2,3,4,6].indexOf(o.c)<0||[30,60,90].indexOf(o.t)<0) return null;
+      if(!Number.isInteger(o.p)||o.p<0||o.p>999) return null;
+      o.n=String(o.n||'A friend').slice(0,14);
+      return o;
+    }catch(e){return null}
+  }
+
+  /* ---------- home ---------- */
+  function summary(p){
+    var W={add:'Adding',sub:'Subtracting',mul:'Multiplying',div:'Dividing'};
+    var ops=p.ops.map(function(o){return W[o]}).join(' · ');
+    return[ops,({1:'Easy',2:'Medium',3:'Hard'}[p.level]),p.count+' cards per round'];
+  }
+  function renderHome(){
+    (function(){var lp=player(store.last)||store.players[0];$('#ace').innerHTML=aceSvg(lp&&lp.equippedCosmetic)})();
+    var sb=$('#soundBtn');sb.textContent=store.sound?'Sound on':'Sound off';sb.setAttribute('aria-pressed',store.sound?'true':'false');
+    $('#players').innerHTML=store.players.map(function(p){
+      var chips=summary(p).map(function(c){return'<span class="chip">'+esc(c)+'</span>'}).join('');
+      var cosmetic=COSMETICS.filter(function(c){return c.id===p.equippedCosmetic})[0];
+      if(p.name==='Add a player'||p.name==='Your name') return'<article class="player player-empty" data-id="'+p.id+'"><div class="empty-cat" aria-hidden="true">'+ACE_SVG+'</div><h2>'+(p.name==='Your name'?'Name your player':'Add a player')+'</h2><p>Add a name to save your own scores and Spark Points.</p><button class="btn" data-act="edit">Set up</button></article>';
+      return'<article class="player" data-id="'+p.id+'">'+
+        '<div class="row"><h2><span class="buddy-mark" aria-label="Ace the cat">'+aceSvg(p.equippedCosmetic)+'</span>'+esc(p.name)+'</h2><button class="edit" data-act="edit" aria-label="Edit '+esc(p.name)+'">Edit</button></div>'+
+        '<div class="chips">'+chips+'</div>'+
+        '<div class="row" style="align-items:center"><span class="wallet">✦ '+p.points+' Spark Points</span><button class="edit" data-act="shop">Dress up Ace</button></div>'+
+        '<div class="go">'+
+          '<button class="play-btn calm" data-act="calm"><b>Calm</b><small>Best '+bestOf(p.id,'calm')+'</small></button>'+
+          '<button class="play-btn timed" data-act="timed"><b>Timed</b><small>Best '+bestOf(p.id,'timed')+'</small></button>'+'<button class="play-btn words" data-act="words"><b>Ace\'s Quiz</b><small>Words and real life · Best '+bestOf(p.id,'words')+'</small></button>'+
+        '</div></article>';
+    }).join('');
+  }
+  $('#players').addEventListener('click',function(e){
+    var btn=e.target.closest('button[data-act]');if(!btn) return;
+    var id=btn.closest('.player').getAttribute('data-id'),act=btn.getAttribute('data-act');
+    ensureAudio();
+    if(act==='edit') openSettings(id); else if(act==='shop') openShop(id); else startGame(id,act);
+  });
+  $('#soundBtn').addEventListener('click',function(){store.sound=!store.sound;save();renderHome();if(store.sound){ensureAudio();sGood()}});
+  var aceT=0;
+  $('#ace').addEventListener('click',function(){
+    ensureAudio();tone(196,0,.28,'triangle',.06);tone(247,.14,.3,'triangle',.05);
+    var SAY=['mrrp!','Let\'s play!','Meow!','Feed me answers!','Purrrr...','I love numbers!'];hop($('#ace'));var s=$('#aceSay');s.textContent=SAY[Math.floor(Math.random()*SAY.length)];s.hidden=false;clearTimeout(aceT);aceT=setTimeout(function(){s.hidden=true},1500);
+  });
+
+  function show(id){['home','settings','play'].forEach(function(s){$('#'+s).hidden=(s!==id)});if(id!=='home')$('#shopOv').hidden=true;window.scrollTo(0,0)}
+
+  /* join a challenge */
+  var pending=null;
+  function codeMsg(t,ok){var m=$('#codeMsg');m.textContent=t;m.className='msg'+(ok?' ok':'')}
+  $('#codeGo').addEventListener('click',function(){
+    var ch=dec($('#codeIn').value);
+    if(!ch){codeMsg('That code does not look right. Paste the whole code, starting with OP1-.');return}
+    codeMsg('');pending=ch;
+    $('#pickTitle').textContent=ch.n+' sent a challenge';
+    $('#pickText').textContent='Beat '+ch.p+' in '+ch.t+' seconds. You both play the same problems. Who is playing?';
+    $('#pickBtns').innerHTML=store.players.map(function(p){return'<button class="btn" data-id="'+p.id+'" type="button">'+esc(p.name)+'</button>'}).join('');
+    $('#pickOv').hidden=false;
+  });
+  $('#pickBtns').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-id]');if(!b||!pending) return;
+    var ch=pending;pending=null;$('#pickOv').hidden=true;$('#codeIn').value='';
+    ensureAudio();startGame(b.getAttribute('data-id'),'timed',ch);
+  });
+  $('#pickCancel').addEventListener('click',function(){pending=null;$('#pickOv').hidden=true});
+
+  /* ---------- Spark Points + buddy shop ---------- */
+  var shopId=null;
+  function openShop(id){shopId=id;renderShop();$('#shopOv').hidden=false;}
+  function renderShop(){
+    var p=player(shopId);if(!p)return;
+    $('#shopTitle').textContent=p.name+'’s wardrobe';$('#shopAce').innerHTML=aceSvg(p.equippedCosmetic);
+    $('#shopBalance').textContent=p.points;
+    $('#shopItems').innerHTML=COSMETICS.map(function(c){
+      var owned=c.id===''||p.ownedCosmetics.indexOf(c.id)>-1,active=(p.equippedCosmetic||'')===c.id;
+      var action=active?'Equipped':(owned?'Equip':(p.points>=c.cost?'Buy · '+c.cost+' ✦':'Need '+(c.cost-p.points)+' more ✦'));
+      return'<button type="button" class="shop-item" data-cosmetic="'+c.id+'" '+(active?'disabled':'')+'><span class="cosmetic">'+c.icon+'</span><span class="item-info"><b>'+c.name+'</b><small>'+c.desc+'</small></span><span class="item-action">'+action+'</span></button>';
+    }).join('');
+  }
+  $('#shopItems').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-cosmetic]');if(!b||!shopId)return;
+    var p=player(shopId),c=COSMETICS.filter(function(x){return x.id===b.dataset.cosmetic})[0];if(!p||!c)return;
+    if(c.id===''||p.ownedCosmetics.indexOf(c.id)>-1){p.equippedCosmetic=c.id;$('#shopMsg').textContent=c.name+' equipped!';}
+    else if(p.points>=c.cost){p.points-=c.cost;p.ownedCosmetics.push(c.id);p.equippedCosmetic=c.id;$('#shopMsg').textContent='Unlocked '+c.name+'! It is yours to keep.';}
+    else{$('#shopMsg').textContent='Keep playing to earn the points you need.';return;}
+    save();renderShop();renderHome();hop($('#shopAce'));burst($('#shopAce'),16);
+  });
+  $('#shopClose').addEventListener('click',function(){$('#shopOv').hidden=true;renderHome();});
+
+  /* ---------- settings ---------- */
+  var editId=null;
+  function player(id){return store.players.filter(function(p){return p.id===id})[0]}
+  function openSettings(id){editId=id;renderSettings();show('settings')}
+  function segHtml(items,isOn,attr){
+    return items.map(function(it){return'<button type="button" '+attr+'="'+it[0]+'" aria-pressed="'+(isOn(it[0])?'true':'false')+'">'+it[1]+'</button>'}).join('');
+  }
+  function renderSettings(){
+    var p=player(editId);
+    $('#nameInput').value=(p.name==='Add a player'||p.name==='Your name'||/^Player [123]$/.test(p.name))?'':p.name; $('#nameInput').placeholder='Enter player name';
+    $('#opsSeg').innerHTML=Object.keys(OPS).map(function(o){
+      return'<button type="button" data-op="'+o+'" aria-label="'+OPNAME[o]+'" aria-pressed="'+(p.ops.indexOf(o)>-1)+'">'+OPS[o]+'</button>';
+    }).join('');
+    $('#lvlSeg').innerHTML=segHtml([[1,'Easy'],[2,'Growing'],[3,'Challenge']],function(v){return p.level===v},'data-lvl');
+    $('#lvlHint').textContent=LVLHINT[p.level];
+    $('#cntSeg').innerHTML=segHtml([[2,'2'],[3,'3'],[4,'4'],[6,'6']],function(v){return p.count===v},'data-cnt');
+    var ph=p.look==='photos',list=picsOf(p.id);
+    $('#lookSeg').innerHTML=segHtml([['forest','Forest tokens'],['photos','My photos']],function(v){return ph===(v==='photos')},'data-look');
+    $('#photoBox').hidden=!ph;
+    $('#thumbs').innerHTML=list.map(function(d,i){return'<div class="th"><img alt="" src="'+d+'"><button type="button" data-del="'+i+'" aria-label="Remove photo '+(i+1)+'">×</button></div>'}).join('');
+    $('#photoHint').textContent=!ph?'Lanterns, stars, mushrooms, books and other SparkShire finds.':(list.length?list.length+' photo'+(list.length>1?'s':'')+' saved. If a round needs more cards than photos, forest tokens fill in. Up to 24 photos.':'Add photos from your gallery. Until you do, cards show forest tokens.');
+    $('#timeSeg').innerHTML=segHtml([[30,'30 sec'],[60,'60 sec'],[90,'90 sec']],function(v){return store.timeLen===v},'data-time');
+  }
+  $('#nameInput').addEventListener('input',function(e){var p=player(editId);p.name=e.target.value.trim()||'Player';save()});
+  $('#setPanel').addEventListener('click',function(e){
+    var b=e.target.closest('button');if(!b) return;
+    var p=player(editId);
+    if(b.dataset.op){
+      var i=p.ops.indexOf(b.dataset.op);
+      if(i>-1){if(p.ops.length>1) p.ops.splice(i,1)} else p.ops.push(b.dataset.op);
+    }else if(b.dataset.lvl){p.level=+b.dataset.lvl}
+    else if(b.dataset.cnt){p.count=+b.dataset.cnt}
+    else if(b.dataset.time){store.timeLen=+b.dataset.time}
+    else if(b.dataset.look){p.look=b.dataset.look}
+    else if(b.dataset.del){(photos[p.id]||[]).splice(+b.dataset.del,1);savePhotos()}
+    else if(b.id==='clearPhotos'){photos[p.id]=[];savePhotos()}
+    else if(b.id==='addPhotos'){$('#photoInput').click();return}
+    else if(b.id==='resetBest'){store.best[p.id]={timed:0,calm:0}}
+    else return;
+    save();renderSettings();
+  });
+  $('#photoInput').addEventListener('change',async function(e){
+    var p=player(editId),files=Array.prototype.slice.call(e.target.files||[]);
+    var list=photos[p.id]=photos[p.id]||[],msg='';
+    for(var i=0;i<files.length;i++){
+      if(list.length>=24){msg='Limit is 24 photos per player.';break}
+      var d=await shrink(files[i]);if(!d) continue;
+      list.push(d);
+      if(!savePhotos()){list.pop();msg='Not enough storage on this device for more photos.';break}
+    }
+    e.target.value='';renderSettings();$('#photoMsg').textContent=msg;
+  });
+  $('#doneBtn').addEventListener('click',function(){renderHome();show('home')});
+
+  /* ---------- game ---------- */
+  var G=null;
+  function startGame(id,mode,ch){
+    var words=(mode==='words');if(words)mode='calm';
+    var base=player(id),p=base,len=store.timeLen,seed=null;
+    if(mode==='timed'){
+      seed=ch?ch.s:Math.floor(Math.random()*2147483646)+1;
+      R=mulberry(seed);
+      if(ch){p={id:base.id,name:base.name,ops:ch.o.slice(),level:ch.l,count:ch.c,look:base.look};len=ch.t}
+    }else R=Math.random;
+    store.last=base.id;save();window.__w=words;$('.mini-ace').innerHTML=aceSvg(base.equippedCosmetic);
+    G={words:words,p:p,base:base,mode:mode,seed:seed,ch:ch||null,len:len,score:0,taps:0,tries:0,locked:false,paused:false,over:false,target:null,round:null,
+       total:len*1000,remain:len*1000,end:0,raf:0,timeout:0};
+    $('#play').classList.toggle('calm',mode==='calm');
+    $('#timePill').hidden=(mode==='calm');
+    $('#barWrap').hidden=(mode==='calm');
+    $('#scoreLab').textContent=mode==='calm'?'Collected':'Score';
+    $('#score').textContent='0';$('#roundPoints').textContent='✦ '+(base.points||0);$('#buddyLine').textContent='Ace says: find the matching number!';
+    $('#time').textContent=len;
+    $('#barFill').style.width='100%';
+    $('#pauseOv').hidden=true;$('#resultOv').hidden=true;$('#picOv').hidden=true;
+    show('play');
+    nextRound();
+    if(mode==='timed'){G.end=performance.now()+G.remain;tick()}
+  }
+
+  /* ---------- Ace asks: real-life questions (Calm mode) ---------- */
+  var QUIZ=[
+   {id:'q1',l:1,q:'What are the bumps on top of a Lego brick called?',a:['studs','dots','buttons'],w:'Studs are what lock the bricks together.'},
+   {id:'q2',l:1,q:'In Minecraft, which green mob blows up when it gets close?',a:['Creeper','Zombie','Skeleton'],w:'Creepers hiss, then boom. Stay back!'},
+   {id:'q3',l:1,q:'What do you use to take a hot pan out of the oven?',a:['Oven mitts','Flip-flops','Sunglasses'],w:'Never touch a hot pan with bare hands.'},
+   {id:'q4',l:1,q:'How many legs does an insect have?',a:['6','4','8'],w:'Ants, bees and beetles all have 6. Spiders have 8.'},
+   {id:'q5',l:1,q:'What do you use to measure flour for baking?',a:['A measuring cup','A ruler','A clock'],w:'Bakers measure carefully so the recipe turns out right.'},
+   {id:'q6',l:1,q:'What is the closest star to Earth?',a:['The Sun','The Moon','Mars'],w:'The Sun is a star. The Moon and Mars are not.'},
+   {id:'q7',l:1,q:'In Minecraft, which animal gives you wool?',a:['Sheep','Cow','Chicken'],w:'Use shears and the sheep keeps its wool coming back.'},
+   {id:'q8',l:1,q:'What do you call a tiny Lego person?',a:['A minifigure','A Lego doll','A tiny brick'],w:'Minifigure is short for mini figure.'},
+   {id:'q9',l:1,q:'What happens to ice when it gets warm?',a:['It melts','It gets bigger','It turns to sand'],w:'Ice is frozen water. Heat turns it back into water.'},
+   {id:'q10',l:1,q:'Which one is a mammal?',a:['A whale','A shark','A frog'],w:'Whales breathe air and feed their babies milk.'},
+   {id:'q11',l:1,q:'How many days are in a week?',a:['7','5','10'],w:'Monday through Sunday.'},
+   {id:'q12',l:1,q:'Which way does the sun rise?',a:['East','West','South'],w:'It rises in the east and sets in the west.'},
+   {id:'q13',l:2,q:'The smoke alarm is beeping and you smell smoke. What first?',a:['Get outside, then call 911','Hide under your bed','Look for the smoke'],w:'Get out first. Call from outside.'},
+   {id:'q14',l:2,q:'What do you need to craft a torch in Minecraft?',a:['A stick and coal','A stick and sand','Two apples'],w:'Coal or charcoal on a stick makes a torch.'},
+   {id:'q15',l:2,q:'What makes bread dough rise?',a:['Yeast','Pepper','Ice'],w:'Yeast makes tiny gas bubbles that puff up the dough.'},
+   {id:'q16',l:2,q:'Which one is a need, not a want?',a:['Food','A new toy','A video game'],w:'Needs keep you healthy and safe. Wants are extras.'},
+   {id:'q17',l:2,q:'How many cents is a quarter worth?',a:['25','10','5'],w:'Four quarters make one dollar.'},
+   {id:'q18',l:2,q:'How do you unplug something from the wall?',a:['Pull the plug, not the cord','Yank the cord','Cut the cord'],w:'Pulling the cord can damage it and cause sparks.'},
+   {id:'q19',l:2,q:'When cooking, which way should a pot handle point?',a:['In, away from the edge','Out over the edge','Toward the kids'],w:'That way nobody bumps it and spills hot food.'},
+   {id:'q20',l:2,q:'What does preheat the oven mean?',a:['Turn it on and let it get hot first','Turn it off','Put the food in first'],w:'The oven should be at the right heat before the food goes in.'},
+   {id:'q21',l:2,q:'What force pulls things down toward the ground?',a:['Gravity','Magnets','Wind'],w:'Gravity is why things fall when you drop them.'},
+   {id:'q22',l:2,q:'Which tool pulls stuck Lego bricks apart?',a:['A brick separator','A hammer','Scissors'],w:'The little brick separator saves your fingernails.'},
+   {id:'q23',l:2,q:'Which food should stay in the fridge?',a:['Milk','Crackers','Rice (uncooked)'],w:'Milk spoils quickly when it gets warm.'},
+   {id:'q24',l:3,q:'Which gas do plants take in from the air?',a:['Carbon dioxide','Oxygen','Helium'],w:'Plants take in carbon dioxide and give off oxygen.'},
+   {id:'q25',l:3,q:'You have $10 and want a $30 toy. What is the best plan?',a:['Save a little each week','Borrow from a friend','Forget it'],w:'Small savings add up. Waiting is part of saving.'},
+   {id:'q26',l:3,q:'What should never go in a microwave?',a:['Metal, like foil','A bowl of soup','A cup of water'],w:'Metal can spark and start a fire.'},
+   {id:'q27',l:3,q:'Which ingredient helps cakes get light and fluffy?',a:['Baking powder','Salt','Cinnamon'],w:'Baking powder makes little bubbles as the cake bakes.'},
+   {id:'q28',l:3,q:'In Minecraft, how do you make bread?',a:['Craft 3 wheat in a row','Smelt wheat in a furnace','Throw wheat in water'],w:'Three wheat side by side makes one bread.'},
+   {id:'q29',l:3,q:'Which one will a magnet stick to?',a:['A steel paperclip','A wooden spoon','A plastic cup'],w:'Magnets stick to iron and steel.'},
+   {id:'q30',l:3,q:'How many months are in a year?',a:['12','10','11'],w:'January through December.'}
+  ];
+
+  var WORDQ=[
+   {id:'w1',l:1,q:'Which word rhymes with cake?',a:['lake','duck','book'],w:'Cake and lake end with the same sound.'},
+   {id:'w2',l:1,q:'Which word rhymes with brick?',a:['stick','block','door'],w:'Brick and stick end with the same sound.'},
+   {id:'w3',l:1,q:'What letter does creeper start with?',a:['C','K','S'],w:'Creeper starts with C, even though K sounds the same.'},
+   {id:'w4',l:1,q:'How many letters are in the word Lego?',a:['4','3','5'],w:'L, E, G, O makes four.'},
+   {id:'w5',l:1,q:'What is the opposite of full?',a:['empty','wet','loud'],w:'A full cup and an empty cup are opposites.'},
+   {id:'w6',l:1,q:'What letter does zombie start with?',a:['Z','S','X'],w:'Zombie starts with Z.'},
+   {id:'w7',l:1,q:'Which word starts with the same sound as pizza?',a:['pig','cat','sun'],w:'Pizza and pig both start with the P sound.'},
+   {id:'w8',l:1,q:'What is the opposite of fast?',a:['slow','hot','tiny'],w:'A turtle is slow. A cheetah is fast.'},
+   {id:'w9',l:1,q:'Which word rhymes with blocks?',a:['socks','sand','hat'],w:'Blocks and socks end with the same sound.'},
+   {id:'w10',l:1,q:'Which word means the same as small?',a:['tiny','huge','loud'],w:'Small and tiny mean the same thing.'},
+   {id:'w11',l:2,q:'Which word is spelled correctly?',a:['because','becuase','becase'],w:'Big Elephants Can Always Understand Small Elephants.'},
+   {id:'w12',l:2,q:'Which word is spelled correctly?',a:['friend','freind','frend'],w:'A friend is there until the end.'},
+   {id:'w13',l:2,q:'What is the plural of child?',a:['children','childs','childrens'],w:'Child is special: one child, two children.'},
+   {id:'w14',l:2,q:'What is the plural of kangaroo?',a:['kangaroos','kangarooes','kangaroi'],w:'Just add S: one kangaroo, two kangaroos.'},
+   {id:'w15',l:2,q:'A sign says CAUTION: WET FLOOR. What does it mean?',a:['Be careful, you could slip','Run fast','The floor is new'],w:'Caution means slow down and watch out.'},
+   {id:'w16',l:2,q:'Which word is spelled correctly?',a:['chocolate','choclate','chocolat'],w:'Say it slowly: choc-o-late.'},
+   {id:'w17',l:2,q:'What does POISON on a label mean?',a:['Do not eat or drink it','It tastes good','Keep it warm'],w:'Never taste anything with a poison label.'},
+   {id:'w18',l:2,q:'Which one is a question?',a:['What time is dinner?','Dinner is at six.','Come to dinner.'],w:'Questions ask something and end with ?'},
+   {id:'w19',l:2,q:'What goes at the end of a question?',a:['A question mark','A period','A comma'],w:'A question mark shows someone is asking.'},
+   {id:'w20',l:2,q:'Which word means the opposite of begin?',a:['finish','start','middle'],w:'Begin and finish are opposites.'},
+   {id:'w21',l:2,q:'Which word is spelled correctly?',a:['Wednesday','Wensday','Wendsday'],w:'Say it as Wed-nes-day to remember the D.'},
+   {id:'w22',l:2,q:'Which word is spelled correctly?',a:['beautiful','beutiful','butiful'],w:'Big Elephants Are Usually Tiny In Forests Until Late.'},
+   {id:'w23',l:3,q:'Which word means the same as enormous?',a:['huge','tiny','quiet'],w:'Enormous and huge both mean very big.'},
+   {id:'w24',l:3,q:'Which sentence is correct?',a:['They\'re going to the park.','Their going to the park.','There going to the park.'],w:'They\'re is short for they are.'},
+   {id:'w25',l:3,q:'Which sentence is correct?',a:['I went to the store.','I goed to the store.','I gone to the store.'],w:'Went is the past of go.'},
+   {id:'w26',l:3,q:'Which word is spelled correctly?',a:['necessary','neccessary','necesary'],w:'One collar (C) and two sleeves (SS).'},
+   {id:'w27',l:3,q:'Which word is spelled correctly?',a:['separate','seperate','separete'],w:'There is a rat in separate.'},
+   {id:'w28',l:3,q:'Which word sounds the same as write?',a:['right','wrote','white'],w:'Words that sound alike but are spelled differently are homophones.'},
+   {id:'w29',l:3,q:'Which one is a complete sentence?',a:['The dog ran fast.','Ran fast the','The big brown'],w:'A sentence needs someone doing something.'},
+   {id:'w30',l:3,q:'What does ingredient mean?',a:['One of the things in a recipe','A kitchen tool','A kind of oven'],w:'Flour and eggs are ingredients.'},
+   {id:'w31',l:3,q:'Which word means the opposite of ancient?',a:['modern','old','dusty'],w:'Ancient means very old. Modern means new.'}
+  ];
+  function qpool(lvl){return QUIZ.concat(WORDQ).filter(function(q){return q.l<=lvl})}
+  function buildQuiz(){
+    var lvl=G.p.level||1;G.seenQ=G.seenQ||{};
+    var pool=qpool(lvl).filter(function(q){return !G.seenQ[q.id]});
+    if(!pool.length){G.seenQ={};pool=qpool(lvl)}
+    var q=pool[Math.floor(Math.random()*pool.length)];G.seenQ[q.id]=1;
+    var opts=shuffle(q.a.map(function(t,i){return{text:t,correct:i===0}}),Math.random);
+    G.round={target:G.target,items:opts,quiz:q};G.tries=0;G.locked=false;
+    $('.sign').classList.add('q');$('.sign .find').textContent='Ace asks';$('#target').textContent=q.q;
+    var f=$('#field');f.style.setProperty('--cols',1);
+    f.innerHTML=opts.map(function(it,i){return'<button class="answer-card qcard" data-i="'+i+'" style="animation-delay:0s"><span class="qtext">'+esc(it.text)+'</span></button>'}).join('');
+    $('#buddyLine').textContent='Ace says: take your time!';
+    if(READ)sayRound();
+  }
+  function nextRound(){
+    if(!G||G.over) return;
+    G.n=(G.n||0)+1;
+    if(G.mode==='calm'&&(G.words||(G.n>1&&G.n%4===0))){buildQuiz();return}
+    $('.sign').classList.remove('q');$('.sign .find').textContent='Find';
+    G.round=buildRound(G.p,G.target);
+    G.target=G.round.target;G.tries=0;G.locked=false;
+    $('#target').textContent=G.target;
+    var n=G.round.items.length;
+    var f=$('#field');
+    f.style.setProperty('--cols',n<=3?n:(n===4?2:3));
+    f.innerHTML=G.round.items.map(function(it,i){
+      var aria=it.text.replace('×','times').replace('÷','divided by').replace('−','minus').replace('+','plus');
+      var pic=it.img?'<img class="emo pic" alt="" style="animation-delay:'+(i*0.4)+'s" src="'+it.img+'">'
+                    :'<svg class="emo" viewBox="0 0 100 100" aria-hidden="true" style="animation-delay:'+(i*0.4)+'s"><use href="#'+it.sym+'"/></svg>';
+      return'<button class="answer-card" data-i="'+i+'" style="animation-delay:0s" aria-label="'+aria+'">'+pic+'<span class="expr">'+it.text+'</span></button>';
+    }).join('');
+    if(READ)sayRound();
+  }
+  $('#field').addEventListener('click',function(e){
+    var b=e.target.closest('.answer-card');
+    if(!b||!G||G.locked||G.paused||G.over||b.disabled) return;
+    ensureAudio();
+    var it=G.round.items[+b.dataset.i];
+    G.taps++;
+    if(it.correct){
+      G.locked=true;
+      var first=G.tries===0,qz=G.round.quiz;
+      G.streak=first?(G.streak||0)+1:0;
+      var bonus=(first&&G.streak>0&&G.streak%5===0)?2:((first&&G.streak===3)?1:0),gain=(qz?2:1)+bonus,before=G.base.points||0;
+      G.score++;$('#score').textContent=G.score;
+      G.base.points=before+gain;save();$('#roundPoints').textContent='✦ '+G.base.points;
+      var line=bonus?('✦ '+G.streak+' in a row! Bonus +'+bonus+' · +'+gain+' total'):(CHEERS[Math.floor(Math.random()*CHEERS.length)]+' +'+gain+' Spark Point'+(gain>1?'s':''));
+      var nu=COSMETICS.filter(function(c){return c.cost>before&&c.cost<=G.base.points&&G.base.ownedCosmetics.indexOf(c.id)<0})[0];
+      if(nu)line+=' · You can buy the '+nu.name+'!';
+      $('#buddyLine').textContent=line;
+      hop($('.mini-ace'));burst(b,bonus?26:12);
+      b.classList.add('good');sGood();
+      if(qz)$('#buddyLine').textContent='+'+gain+' ✦ '+qz.w;
+      G.timeout=setTimeout(nextRound,qz?3200:(G.mode==='calm'?900:520));
+    }else{
+      G.streak=0;var ma=$('.mini-ace');ma.classList.remove('hop','wob');void ma.offsetWidth;ma.classList.add('wob');G.tries++;b.classList.add('nope');b.disabled=true;sBad();if(G.round.quiz)$('#buddyLine').textContent='Ace says: not quite, try another!';
+      if(G.mode==='calm'&&G.tries>=2){
+        var all=$('#field').querySelectorAll('.answer-card');
+        G.round.items.forEach(function(x,i){if(x.correct) all[i].classList.add('hint')});
+      }
+    }
+  });
+  function tick(){
+    if(!G||G.over||G.mode!=='timed'||G.paused) return;
+    var left=G.end-performance.now();
+    if(left<=0){$('#time').textContent='0';$('#barFill').style.width='0%';endGame();return}
+    $('#time').textContent=Math.ceil(left/1000);
+    $('#barFill').style.width=(left/G.total*100)+'%';
+    G.raf=requestAnimationFrame(tick);
+  }
+  function pauseGame(){
+    if(!G||G.over||G.paused) return;
+    G.paused=true;
+    if(G.mode==='timed'){G.remain=Math.max(0,G.end-performance.now());cancelAnimationFrame(G.raf)}
+    $('#pauseOv').hidden=false;
+  }
+  function resumeGame(){
+    if(!G||!G.paused) return;
+    G.paused=false;$('#pauseOv').hidden=true;
+    if(G.mode==='timed'){G.end=performance.now()+G.remain;tick()}
+  }
+  function stopGame(){
+    if(G){clearTimeout(G.timeout);cancelAnimationFrame(G.raf);
+      var bk=G.words?'words':'calm';if(G.mode==='calm'&&G.score>bestOf(G.base.id,bk)){store.best[G.base.id][bk]=G.score;save()}
+    }
+    G=null;R=Math.random;
+  }
+  var lastShare='';
+  function endGame(){
+    if(!G||G.over) return;
+    G.over=true;cancelAnimationFrame(G.raf);clearTimeout(G.timeout);
+    var id=G.base.id,prev=bestOf(id,'timed'),isNew=false;
+    if(!G.ch&&G.score>prev&&G.score>0){isNew=true;store.best[id].timed=G.score;save()}
+    $('#resScore').textContent=G.score;
+    $('#resBest').textContent=bestOf(id,'timed');
+    $('#resAcc').textContent=(G.taps?Math.round(100*G.score/G.taps):0)+'%';
+    $('#resNew').hidden=!isNew;
+    var vs=$('#resVs');
+    if(G.ch){
+      var me=G.score,them=G.ch.p,nm=esc(G.ch.n);
+      vs.innerHTML=me>them?'You win! '+me+' to '+them:(me===them?'A tie! '+me+' each. Great game!':nm+' wins this one, '+them+' to '+me+'. Rematch?');
+      vs.hidden=false;
+    }else vs.hidden=true;
+    var code=enc({v:1,s:G.seed,o:G.p.ops,l:G.p.level,c:G.p.count,t:G.len,n:G.base.name,p:G.score});
+    $('#codeOut').value=code;
+    lastShare='Can you beat '+G.score+' in SparkShire: Lanternlight? Paste this code in the game: '+code;
+    $('#shareMsg').textContent='';$('#shareMsg').className='msg';
+    $('#shareBtn').hidden=!navigator.share;
+    G.shareScore=G.score;G.shareName=G.base.name;
+    $('#resultOv').hidden=false;sEnd();
+  }
+  function shareMsg(t){var m=$('#shareMsg');m.textContent=t;m.className='msg ok'}
+  $('#copyBtn').addEventListener('click',function(){
+    var inp=$('#codeOut');
+    function fallback(){inp.focus();inp.select();try{document.execCommand('copy');shareMsg('Copied. Paste it in a message.')}catch(e){shareMsg('Press and hold the code, then tap Copy.')}}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastShare).then(function(){shareMsg('Copied. Paste it in a message.')},fallback)}else fallback();
+  });
+  $('#codeOut').addEventListener('focus',function(e){e.target.select()});
+  $('#shareBtn').addEventListener('click',function(){
+    try{navigator.share({text:lastShare}).catch(function(){})}catch(e){}
+  });
+
+  /* score picture */
+  var picBlob=null;
+  function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+  async function makeCard(score,name){
+    try{await document.fonts.load('700 120px Fredoka');await document.fonts.load('600 40px Fredoka')}catch(e){}
+    var c=document.createElement('canvas');c.width=1080;c.height=1350;var x=c.getContext('2d');
+    var g=x.createLinearGradient(0,0,0,1350);g.addColorStop(0,'#2c3556');g.addColorStop(.4,'#4C5D87');g.addColorStop(.72,'#8c78a6');g.addColorStop(1,'#D28AA8');
+    x.fillStyle=g;x.fillRect(0,0,1080,1350);
+    var m=mulberry(7);x.fillStyle='#fff';
+    for(var i=0;i<46;i++){x.globalAlpha=.4+m()*.6;x.beginPath();x.arc(m()*1080,m()*700,1+m()*2.6,0,6.3);x.fill()}
+    x.globalAlpha=1;
+    x.fillStyle='#3e6755';x.beginPath();x.moveTo(0,1130);x.quadraticCurveTo(300,1010,560,1100);x.quadraticCurveTo(820,1180,1080,1050);x.lineTo(1080,1350);x.lineTo(0,1350);x.fill();
+    x.fillStyle='#355C4A';x.beginPath();x.moveTo(0,1230);x.quadraticCurveTo(280,1140,560,1210);x.quadraticCurveTo(840,1270,1080,1180);x.lineTo(1080,1350);x.lineTo(0,1350);x.fill();
+    x.fillStyle='#f8e2a0';x.fillRect(860,1170,34,34);
+    x.fillStyle='#F5F1E8';rr(x,90,230,900,760,64);x.fill();
+    x.lineWidth=12;x.strokeStyle='#C9A45C';x.stroke();
+    x.textAlign='center';
+    x.fillStyle='#355C4A';x.font='700 84px Fredoka, sans-serif';x.fillText('SparkShire: Lanternlight',540,360);
+    x.fillStyle='#303030';x.font='600 54px Fredoka, sans-serif';x.fillText((name||'I')+' scored',540,450);
+    x.fillStyle='#4C5D87';x.font='700 330px Fredoka, sans-serif';x.fillText(String(score),540,730);
+    x.fillStyle='#355C4A';x.font='600 66px Fredoka, sans-serif';x.fillText('Can you beat '+score+'?',540,850);
+    x.fillStyle='#5d5a66';x.font='600 38px Fredoka, sans-serif';x.fillText('Ask for my code and play the same problems',540,930);
+    return c;
+  }
+  $('#picBtn').addEventListener('click',async function(){
+    if(!G) return;
+    var c=await makeCard(G.shareScore,G.shareName);
+    $('#picImg').src=c.toDataURL('image/png');
+    picBlob=null;$('#picShare').hidden=true;
+    try{c.toBlob(function(b){picBlob=b;try{var f=new File([b],'sparkshire-lanternlight-score.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[f]})) $('#picShare').hidden=false}catch(e){}},'image/png')}catch(e){}
+    $('#picOv').hidden=false;
+  });
+  $('#picShare').addEventListener('click',function(){
+    try{var f=new File([picBlob],'sparkshire-lanternlight-score.png',{type:'image/png'});navigator.share({files:[f],text:'Can you beat '+G.shareScore+' in SparkShire: Lanternlight?'}).catch(function(){})}catch(e){}
+  });
+  $('#picClose').addEventListener('click',function(){$('#picOv').hidden=true});
+
+  $('#pauseBtn').addEventListener('click',pauseGame);
+  $('#resumeBtn').addEventListener('click',resumeGame);
+  $('#quitBtn').addEventListener('click',function(){stopGame();renderHome();show('home')});
+  $('#homeBtn').addEventListener('click',function(){stopGame();renderHome();show('home')});
+  $('#againBtn').addEventListener('click',function(){var id=G.base.id;stopGame();startGame(id,'timed')});
+  document.addEventListener('visibilitychange',function(){if(document.hidden) pauseGame()});
+
+  $('#nojs').hidden=true;
+  renderHome();show('home');
+  window.__op={dec:dec,enc:enc,mulberry:mulberry};
+})();
+</script>
